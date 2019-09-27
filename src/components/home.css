@@ -1,0 +1,15 @@
+form {
+    display: grid;
+    font-family: 'OldE';
+}
+
+input,button {
+    border: 5px solid black;
+    font-family: 'OldE';
+    font-size: 2rem;
+    margin:.5rem
+}
+
+button {
+    background:lightgrey;
+}

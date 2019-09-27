@@ -1,0 +1,11 @@
+
+    @font-face {
+        font-family: 'OldE';
+        src: url('../src/fonts/Old_English_Five.ttf') format('truetype'),
+        url('../src/fonts/Old_English_Five.woff') format('woff')
+    }
+
+    body {
+        font-family: 'OldE';
+        font-size: 2rem;
+    }
