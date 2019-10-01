@@ -8,29 +8,28 @@ var connectedUsers = {};
 
 app.use(express.static(__dirname + '/public'));
 
-io.on('connection', function(socket) {
-	console.log('A user is connected.');
+io.on('connection', function(client) {
 	client.on('subscribeToTimer', (interval) => {
-		console.log('client is subscribing to timer with interval ', interval);
+		// console.log('client is subscribing to timer with interval ', interval);
 		setInterval(() => {
 		  client.emit('timer', new Date());
 		}, interval);
 	  });
 
-	socket.on('disconnect', function() {
-		var userData = connectedUsers[socket.id];
+	client.on('disconnect', function() {
+		var userData = connectedUsers[client.id];
 		if (typeof userData !== 'undefined') {
-			socket.leave(connectedUsers[socket.id]);
+			client.leave(connectedUsers[client.id]);
 			io.to(userData.room).emit('message', {
 				username: 'System',
 				text: userData.username + ' has left!',
 				timestamp: moment().valueOf()
 			});
-			delete connectedUsers[socket.id];
+			delete connectedUsers[client.id];
 		}
 	});
 
-	socket.on('joinRoom', function(req, callback) {
+	client.on('joinRoom', function(req, callback) {
 		if (req.room.replace(/\s/g, "").length > 0 && req.username.replace(/\s/g, "").length > 0) {
 			var nameTaken = false;
 
@@ -47,9 +46,9 @@ io.on('connection', function(socket) {
 					error: 'Sorry this username is taken!'
 				});
 			} else {
-				connectedUsers[socket.id] = req;
-				socket.join(req.room);
-				socket.broadcast.to(req.room).emit('message', {
+				connectedUsers[client.id] = req;
+				client.join(req.room);
+				client.broadcast.to(req.room).emit('message', {
 					username: 'System',
 					text: req.username + ' has joined!',
 					timestamp: moment().valueOf()
@@ -66,12 +65,12 @@ io.on('connection', function(socket) {
 		}
 	});
 
-	socket.on('message', function(message) {
+	client.on('message', function(message) {
 		message.timestamp = moment().valueOf();
-		io.to(connectedUsers[socket.id].room).emit('message', message);
+		io.to(connectedUsers[client.id].room).emit('message', message);
 	});
 
-	socket.emit('message', {
+	client.emit('message', {
 		username: 'System',
 		text: 'Hey there! Ask someone to join this chat room to start talking.',
 		timestamp: moment().valueOf()
