@@ -1,39 +1,55 @@
 import React from 'react';
 import './home.css';
-import {subscribeToTimer} from '../api';
+import {subscribeToRooms} from '../api';
 
-export class Home extends React.Component {
-    state = {}
-    
-    constructor(props){
-        super(props);
-        this.state = {
-            room: '',
-            timestamp: 'no time stamp yet'
-        }
-
-        this.handleRoomChange = this.handleRoomChange.bind(this);
-        this.handleFormSubmit = this.handleFormSubmit.bind(this);
-
-        subscribeToTimer((err, timestamp) => this.setState({ 
-            timestamp:  timestamp 
-          }));
+export class Home extends React.Component {    
+    state = {
+        callSign: '',
+        rooms: [],
+        pickedRoom: ''
     }
 
-    handleRoomChange(e){
-        this.setState({ room: e.target.value });
+    constructor(props){
+        super(props);
+        this.handleNewCallSign = this.handleNewCallSign.bind(this);
+
+        this.handleNewRoom = this.handleNewRoom.bind(this);
+        this.handleFormSubmit = this.handleFormSubmit.bind(this);
+        this.onPickRoom = this.onPickRoom.bind(this);
+    }
+
+    componentDidMount() {
+        subscribeToRooms((rooms) => this.setState({rooms: rooms}));
+    }
+
+    handleNewCallSign(e){
+        this.setState({ callSign: e.target.value });
+    }
+
+    handleNewRoom(e){
+        this.setState({ pickedRoom: e.target.value });
     }
 
     handleFormSubmit(e) {
-        this.props.parentCallback(this.state.room);
+        this.props.parentCallback(this.state.pickedRoom, this.state.callSign);
+    }
+
+    onPickRoom(e) {
+        this.setState({pickedRoom: e.target.value});
     }
 
     render() {
         return (
             <div className="home">
-                <p>      This is the timer value: {this.state.timestamp}</p>
                 <form>
-                    <input type="text" onChange={this.handleRoomChange} placeholder="New Room Name"/>
+                    <select  onChange={this.onPickRoom}>
+                    <option value="Pick existing room" key="Pick existing room">▼ Pick existing room ▼</option>
+                        {this.state.rooms.map(room => <option value={room.roomName} key={room.key}>{room.roomName}</option>)}
+                    </select>
+                    <input type="text" onChange={this.handleNewCallSign} placeholder="Your Call Sign"/>
+
+                    <input type="text" onChange={this.handleNewRoom} placeholder="New Room Name"/>
+
                     <button type="button" onClick={this.handleFormSubmit}>JOIN ROOM</button>
                 </form>
             </div>

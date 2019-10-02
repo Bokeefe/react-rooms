@@ -3,11 +3,12 @@ form {
     font-family: 'OldE';
 }
 
-input,button {
+input, button, select, option {
     border: 5px solid black;
     font-family: 'OldE';
-    font-size: 2rem;
-    margin:.5rem
+    font-size: .5rem;
+    margin:.5rem;
+    text-align: center;
 }
 
 button {

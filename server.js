@@ -5,28 +5,15 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var moment = require('moment');
 var connectedUsers = {};
+var rooms = [];
 
 app.use(express.static(__dirname + '/public'));
 
 io.on('connection', function(client) {
-	client.on('subscribeToTimer', (interval) => {
-		// console.log('client is subscribing to timer with interval ', interval);
+	client.on('subscribeToRooms', (interval) => {
 		setInterval(() => {
-		  client.emit('timer', new Date());
+		  client.emit('rooms', rooms);
 		}, interval);
-	  });
-
-	client.on('disconnect', function() {
-		var userData = connectedUsers[client.id];
-		if (typeof userData !== 'undefined') {
-			client.leave(connectedUsers[client.id]);
-			io.to(userData.room).emit('message', {
-				username: 'System',
-				text: userData.username + ' has left!',
-				timestamp: moment().valueOf()
-			});
-			delete connectedUsers[client.id];
-		}
 	});
 
 	client.on('joinRoom', function(req, callback) {
@@ -48,6 +35,8 @@ io.on('connection', function(client) {
 			} else {
 				connectedUsers[client.id] = req;
 				client.join(req.room);
+				rooms.push({ key: req.room, roomName: req.room});
+				console.log(req.username);
 				client.broadcast.to(req.room).emit('message', {
 					username: 'System',
 					text: req.username + ' has joined!',
@@ -63,6 +52,19 @@ io.on('connection', function(client) {
 				error: 'Hey, please fill out the form!'
 			});
 		}
+
+		client.on('disconnect', function() {
+			var userData = connectedUsers[client.id];
+			if (typeof userData !== 'undefined') {
+				client.leave(connectedUsers[client.id]);
+				io.to(userData.room).emit('message', {
+					username: 'System',
+					text: userData.username + ' has left!',
+					timestamp: moment().valueOf()
+				});
+				delete connectedUsers[client.id];
+			}
+		});
 	});
 
 	client.on('message', function(message) {

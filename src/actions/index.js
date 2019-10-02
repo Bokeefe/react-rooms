@@ -11,3 +11,13 @@ export function getRooms () {
         payload: request
     }
 }
+
+export function joinRoom (roomName) {
+    const request = axios.get(`${URL}/${roomName}`)
+    .then(response => response.data)
+
+    return {
+        type: 'JOIN_ROOM',
+        payload: request
+    }
+}

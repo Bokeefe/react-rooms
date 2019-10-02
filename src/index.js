@@ -12,11 +12,12 @@ import Room from './components/room';
 
 class App extends React.Component{
     state = {
-        roomName: ''
+        roomName: '',
+        callSign: ''
     }
 
-    navigateToRoom = (roomName) => {
-        this.setState({roomName});
+    navigateToRoom = (roomName, callSign) => {
+        this.setState({roomName: roomName, callSign: callSign});
         history.push('/'+ roomName);
     }
 
@@ -29,7 +30,7 @@ class App extends React.Component{
                         <hr/>
                     </header>
                     <Switch>
-                        <Route path="/:room" component={() => <Room roomName={this.state.roomName}/>}/>
+                        <Route path="/:room" component={() => <Room roomName={this.state.roomName} callSign={this.state.callSign}/>}/>
                         <Route path="/" component={() => <Home  parentCallback={this.navigateToRoom} />}/>
                     </Switch>
                 </div>
