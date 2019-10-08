@@ -1,0 +1,7 @@
+{
+  "manifest_version": 1,
+  "name": "ReactRooms",
+  "version": "1.0",
+  "description": "This is an attempt to make private rooms with users connected by socket. FE is react",
+  "browser_action": {}
+}

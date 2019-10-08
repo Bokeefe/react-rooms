@@ -5,7 +5,7 @@ export default (state = {}, action) => {
     case 'JOIN_ROOM':
       return { ...state, room: action.payload };
     case 'MESSAGE':
-      return { ...state, room: action.payload };
+      return { ...state, message: action.payload };
     default:
       return state;
   }

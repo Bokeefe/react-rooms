@@ -38,13 +38,19 @@ export class Home extends React.Component {
     this.setState({ pickedRoom: e.target.value });
   }
 
+  // componentWillUnmount() {
+  //   if (this.isMounted()) {
+  //     this.setState({ pickedRoom: e.target.value });
+  //   }
+  // }
+
   render() {
     return (
       <div className="home">
         <form>
           <select onChange={this.onPickRoom}>
             <option value="Pick existing room" key="Pick existing room">
-              ▼ Pick existing room ▼
+              ▼ Pick existing room
             </option>
             {this.state.rooms.map(room => (
               <option value={room.roomName} key={room.key}>
