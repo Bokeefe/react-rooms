@@ -1,34 +1,40 @@
 import React from 'react';
 import history from '../history';
-import { joinRoom, message } from '../api';
+import { joinRoom, joinedRoom } from '../socket';
+import openSocket from 'socket.io-client';
+const socket = openSocket('http://localhost:8080');
 
 class Room extends React.Component {
   state = {
     room: null,
-    messages: [
-      { callSign: 'briggs', message: 'reporting for duty' },
-      { callSign: 'subs', message: 'think about it' }
-    ]
+    message: '',
+    messages: []
   };
 
-  constructor(props) {
-    super(props);
-    message(message => {
-      console.log(message);
-    });
-  }
+  //   constructor(props) {
+  //     super(props);
+  //   }
 
   componentDidMount() {
     if (!this.props.roomName) {
       history.push('/');
     } else {
       this.setState({ room: this.props.roomName });
+
       joinRoom({ room: this.props.roomName, username: this.props.callSign }, room => {
-        this.appendMessage(room.username, room.message);
+        if (room.length) {
+          this.appendMessage(room.username, room.message);
+        }
+      });
+
+      socket.on('message', message => {
+        this.appendMessage(message.username, message.text);
+      });
+
+      joinedRoom(data => {
+        console.log('hit joinedRoom', data);
       });
     }
-
-    this.appendMessage('DogHair', 'friggin pony up');
   }
 
   appendMessage(callSign, message) {
@@ -36,14 +42,20 @@ class Room extends React.Component {
     this.setState({ messages: concatMsgs });
   }
 
+  handleChatMessage(e) {
+    this.setState({ message: e.target.value });
+  }
+
   render() {
     return (
       <div>
         Welcome to {this.props.roomName}
+        <input type="text" onChange={this.handleSendChat} placeholder="type here" />
+        <button type="button">chat</button>
         <div>
           {this.state.messages.map(function(item) {
             return (
-              <div className="messages">
+              <div className="message">
                 <p>
                   <b>{item.callSign}</b>: {item.message}
                 </p>
