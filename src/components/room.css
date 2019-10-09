@@ -1,3 +1,4 @@
-.message {
-  font-size: 0.5rem;
+p {
+  font-size: 0.1rem;
+  margin: 0 !important;
 }

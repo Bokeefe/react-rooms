@@ -27,27 +27,23 @@ class Room extends React.Component {
         'joinRoom',
         { room: this.props.roomName, username: this.props.callSign },
         room => {
-          console.log('rooom', room);
-          if (room.length) {
+          if (!room.nameTaken) {
             this.appendMessage(room.username, room.message);
           }
         }
       );
 
       socket.on('message', message => {
-        console.log('message: ', message);
         this.appendMessage(message.username, message.text);
-      });
-
-      socket.on('joinedRoom', data => {
-        console.log('joinedRoom', data);
       });
     }
   }
 
   appendMessage(callSign, message) {
-    const concatMsgs = this.state.messages.concat({ callSign: callSign, message: message });
-    this.setState({ messages: concatMsgs });
+    if (message) {
+      const concatMsgs = this.state.messages.concat({ callSign: callSign, message: message });
+      this.setState({ messages: concatMsgs });
+    }
   }
 
   handleChatMessage(e) {
@@ -67,7 +63,7 @@ class Room extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="room">
         Welcome to {this.props.roomName}
         <input id="message" type="text" onChange={this.handleChatMessage} placeholder="type here" />
         <button type="button" onClick={this.send}>

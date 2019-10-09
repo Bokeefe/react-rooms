@@ -19,11 +19,18 @@ io.on('connection', function(client) {
   client.on('joinRoom', function(req, callback) {
     if (req.room.replace(/\s/g, '').length > 0 && req.username.replace(/\s/g, '').length > 0) {
       var nameTaken = false;
+      var roomTaken = false;
 
       Object.keys(connectedUsers).forEach(function(socketId) {
         var userInfo = connectedUsers[socketId];
         if (userInfo.username.toUpperCase() === req.username.toUpperCase()) {
           nameTaken = true;
+        }
+      });
+
+      rooms.forEach(key => {
+        if (key.roomName === req.room) {
+          roomTaken = true;
         }
       });
 
@@ -35,7 +42,10 @@ io.on('connection', function(client) {
       } else {
         connectedUsers[client.id] = req;
         client.join(req.room);
-        rooms.push({ key: req.room, roomName: req.room });
+
+        if (!roomTaken) {
+          rooms.push({ key: req.room, roomName: req.room });
+        }
 
         client.broadcast.to(req.room).emit('message', {
           username: 'System',
@@ -58,7 +68,7 @@ io.on('connection', function(client) {
       if (typeof userData !== 'undefined') {
         client.leave(connectedUsers[client.id]);
         io.to(userData.room).emit('message', {
-          username: 'System',
+          username: '🤖',
           text: userData.username + ' has left!',
           timestamp: moment().valueOf()
         });
@@ -69,6 +79,7 @@ io.on('connection', function(client) {
 
   client.on('message', function(message) {
     message.timestamp = moment().valueOf();
+    console.log(connectedUsers, client.id);
     io.to(connectedUsers[client.id].room).emit('message', message);
   });
 

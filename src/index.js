@@ -25,7 +25,11 @@ class App extends React.Component {
       <Router history={history}>
         <div>
           <header>
-            <NavLink to="/">Home</NavLink>
+            <NavLink to="/">
+              <span role="img" aria-label="home icon">
+                🏰
+              </span>
+            </NavLink>
             <br />
             <hr />
           </header>
