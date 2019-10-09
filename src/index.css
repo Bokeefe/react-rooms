@@ -5,15 +5,8 @@
     url('../src/fonts/Old_English_Five.woff') format('woff');
 }
 
-body {
-  font-family: 'OldE';
-}
-
-span {
-  font-size: 2rem;
-}
-
 header {
+  font-family: 'OldE';
   text-shadow: 6px 3px 3px rgba(0, 0, 0, 0.41);
   text-transform: uppercase;
 }

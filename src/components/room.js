@@ -1,6 +1,8 @@
 import React from 'react';
 import history from '../history';
 import openSocket from 'socket.io-client';
+import { NavLink } from 'react-router-dom';
+import './room.css';
 
 const socket = openSocket('http://localhost:8080');
 
@@ -9,51 +11,76 @@ class Room extends React.Component {
     super(props);
     this.handleChatMessage = this.handleChatMessage.bind(this);
     this.send = this.send.bind(this);
+    this.setState({
+      roomName: this.props.roomName
+        ? this.props.roomName
+        : history.location.pathname.replace('/', '')
+    });
   }
 
   state = {
-    room: null,
+    callSign: this.props.callSign,
+    roomName: this.props.roomName,
     message: '',
     messages: []
   };
 
   componentDidMount() {
-    if (!this.props.roomName) {
-      history.push('/');
-    } else {
-      this.setState({ room: this.props.roomName });
+    const roomName = this.props.roomName
+      ? this.props.roomName
+      : history.location.pathname.replace('/', '');
 
+    const callSign = this.props.callSign ? this.props.callSign : this.createCallSign();
+
+    this.setState({ callSign: callSign, roomName: roomName }, () => {
       socket.emit(
         'joinRoom',
-        { room: this.props.roomName, username: this.props.callSign },
+        { room: this.state.roomName, username: this.state.callSign },
         room => {
           if (!room.nameTaken) {
             this.appendMessage(room.username, room.message);
           }
         }
       );
+    });
 
-      socket.on('message', message => {
-        this.appendMessage(message.username, message.text);
-      });
-    }
+    socket.on('message', message => {
+      this.appendMessage(message.username, message.text);
+    });
   }
 
   appendMessage(callSign, message) {
+    if (this.state.messages.length > 4) {
+      this.state.messages.shift();
+    }
     if (message) {
       const concatMsgs = this.state.messages.concat({ callSign: callSign, message: message });
       this.setState({ messages: concatMsgs });
     }
   }
 
+  createCallSign() {
+    const callSign = prompt('create a callsign for the game room:');
+    if (callSign) {
+      this.setState({ callSign: callSign });
+      return callSign;
+    } else {
+      history.push('/');
+      return null;
+    }
+  }
+
   handleChatMessage(e) {
-    this.setState({ message: e.target.value });
+    if (e.keyCode !== 13) {
+      this.setState({ message: e.target.value });
+    } else {
+      this.send();
+    }
   }
 
   send() {
-    console.log(this.state.message);
     socket.emit('message', {
-      username: this.props.callSign,
+      username: this.state.callSign,
       text: this.state.message
     });
 
@@ -64,21 +91,37 @@ class Room extends React.Component {
   render() {
     return (
       <div className="room">
-        Welcome to {this.props.roomName}
-        <input id="message" type="text" onChange={this.handleChatMessage} placeholder="type here" />
-        <button type="button" onClick={this.send}>
-          chat
-        </button>
         <div>
-          {this.state.messages.map(function(item, index) {
-            return (
-              <div className="message" key={index}>
-                <p>
-                  <b>{item.callSign}</b>: {item.message}
-                </p>
-              </div>
-            );
-          })}
+          <NavLink to="/">
+            <span role="img" aria-label="home icon">
+              🏰
+            </span>
+          </NavLink>
+          Welcome to {this.state.roomName}
+        </div>
+        <div className="msg-container">
+          <div className="messages">
+            {this.state.messages.map(function(item, index) {
+              return (
+                <div key={index}>
+                  <span>
+                    <b>{item.callSign}</b>: {item.message}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div>
+            <input
+              id="message"
+              type="text"
+              onKeyUp={this.handleChatMessage}
+              placeholder="type here"
+            />
+            <button type="button" onClick={this.send}>
+              chat
+            </button>
+          </div>
         </div>
       </div>
     );

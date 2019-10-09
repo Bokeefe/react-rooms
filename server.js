@@ -48,7 +48,7 @@ io.on('connection', function(client) {
         }
 
         client.broadcast.to(req.room).emit('message', {
-          username: 'System',
+          username: '🤖',
           text: req.username + ' has joined!',
           timestamp: moment().valueOf()
         });
@@ -79,12 +79,11 @@ io.on('connection', function(client) {
 
   client.on('message', function(message) {
     message.timestamp = moment().valueOf();
-    console.log(connectedUsers, client.id);
     io.to(connectedUsers[client.id].room).emit('message', message);
   });
 
   client.emit('message', {
-    username: 'System',
+    username: '🤖',
     text: 'Hey there! Ask someone to join this chat room to start talking.',
     timestamp: moment().valueOf()
   });

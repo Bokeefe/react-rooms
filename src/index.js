@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import history from './history';
 
-import { Router, Route, NavLink, Switch } from 'react-router-dom';
+import { Router, Route, Switch } from 'react-router-dom';
 import './index.css';
 
 // COMPONENTS
@@ -24,15 +24,6 @@ class App extends React.Component {
     return (
       <Router history={history}>
         <div>
-          <header>
-            <NavLink to="/">
-              <span role="img" aria-label="home icon">
-                🏰
-              </span>
-            </NavLink>
-            <br />
-            <hr />
-          </header>
           <Switch>
             <Route
               path="/:room"
