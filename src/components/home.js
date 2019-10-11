@@ -19,8 +19,17 @@ export class Home extends React.Component {
   }
 
   componentDidMount() {
-    subscribeToRooms(rooms => this.setState({ rooms: rooms }));
+    subscribeToRooms(rooms => {
+      for (const key in rooms) {
+        if (this.state.rooms.indexOf(key) === -1) {
+          const concatRooms = this.state.rooms.concat(key);
+          this.setState({ rooms: concatRooms });
+        }
+      }
+    });
   }
+
+  componentWillUnmount() {}
 
   handleNewCallSign(e) {
     this.setState({ callSign: e.target.value });
@@ -47,8 +56,8 @@ export class Home extends React.Component {
               ▼ PICK AN EXISTING ROOM
             </option>
             {this.state.rooms.map(room => (
-              <option value={room.roomName} key={room.key}>
-                {room.roomName}
+              <option value={room} key={room}>
+                {room}
               </option>
             ))}
           </select>

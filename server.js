@@ -7,7 +7,7 @@ var io = require('socket.io')(http);
 var moment = require('moment');
 var connectedUsers = {};
 var cursed = [];
-var rooms = [];
+var rooms = {};
 
 app.use(express.static(__dirname + '/public'));
 fs.readdir('./src/games/meme/cursed', (err, files) => {
@@ -23,6 +23,7 @@ io.on('connection', function(client) {
   });
 
   client.on('joinRoom', function(req, callback) {
+    console.log('joinroom');
     if (req.room.replace(/\s/g, '').length > 0 && req.username.replace(/\s/g, '').length > 0) {
       var nameTaken = false;
       var roomTaken = false;
@@ -31,12 +32,6 @@ io.on('connection', function(client) {
         var userInfo = connectedUsers[socketId];
         if (userInfo.username.toUpperCase() === req.username.toUpperCase()) {
           nameTaken = true;
-        }
-      });
-
-      rooms.forEach(key => {
-        if (key.roomName === req.room) {
-          roomTaken = true;
         }
       });
 
@@ -50,16 +45,24 @@ io.on('connection', function(client) {
         client.join(req.room);
 
         if (!roomTaken) {
-          rooms.push({ key: req.room, roomName: req.room });
+          if (!rooms[req.room]) {
+            rooms[req.room] = { users: [req.username] };
+          } else {
+            rooms[req.room].users.push(req.username);
+            console.log(rooms[req.room]);
+          }
         }
+        callback({
+          nameAvailable: true
+        });
+        client.broadcast.to(req.room).emit('updateRoom', {
+          room: rooms[req.room]
+        });
 
         client.broadcast.to(req.room).emit('message', {
           username: '🤖',
           text: req.username + ' has joined!',
           timestamp: moment().valueOf()
-        });
-        callback({
-          nameAvailable: true
         });
       }
     } else {

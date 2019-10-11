@@ -3,7 +3,7 @@ import history from '../history';
 import openSocket from 'socket.io-client';
 import { NavLink } from 'react-router-dom';
 import Chat from './chat';
-import Meme from '../games/meme/meme';
+import RoomOrganizer from './room_organizer';
 
 const socket = openSocket('http://localhost:8080');
 
@@ -13,7 +13,8 @@ class Room extends React.Component {
     this.state = {
       callSign: this.props.callSign,
       roomName: this.props.roomName,
-      messages: []
+      messages: [],
+      users: []
     };
   }
 
@@ -22,6 +23,7 @@ class Room extends React.Component {
       ? this.props.roomName
       : history.location.pathname.replace('/', '');
 
+    // const callSign = this.props.callSign ? this.props.callSign : this.createCallSign();
     const callSign = this.props.callSign ? this.props.callSign : this.createCallSign();
 
     this.setState({
@@ -36,10 +38,16 @@ class Room extends React.Component {
         { room: this.state.roomName, username: this.state.callSign },
         room => {
           if (!room.nameTaken) {
+            console.log('sdffgdghkmskdmfds', room);
             this.appendMessage(room.username, room.message);
           }
         }
       );
+    });
+
+    socket.on('updateRoom', room => {
+      console.log('updateRoom', room.room.users);
+      this.setState({ users: room.room.users });
     });
 
     socket.on('message', message => {
@@ -58,14 +66,15 @@ class Room extends React.Component {
   }
 
   createCallSign() {
-    const callSign = prompt('create a callsign for the game room:');
-    if (callSign) {
-      this.setState({ callSign: callSign });
-      return callSign;
-    } else {
-      history.push('/');
-      return null;
-    }
+    // const callSign = prompt('create a callsign for the game room:');
+    // if (callSign) {
+    //   this.setState({ callSign: callSign });
+    //   return callSign;
+    // } else {
+    //   history.push('/');
+    //   return null;
+    // }
+    return 'Jimbo';
   }
 
   sendMsg(callSign, message) {
@@ -86,7 +95,9 @@ class Room extends React.Component {
           </NavLink>
           Welcome to {this.state.roomName}
         </div>
-        <Meme />
+
+        <RoomOrganizer users={this.state.users} />
+
         <Chat
           callSign={this.state.callSign}
           messages={this.state.messages}
