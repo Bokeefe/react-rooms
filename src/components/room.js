@@ -2,28 +2,20 @@ import React from 'react';
 import history from '../history';
 import openSocket from 'socket.io-client';
 import { NavLink } from 'react-router-dom';
-import './room.css';
+import Chat from './chat';
+import Meme from '../games/meme/meme';
 
 const socket = openSocket('http://localhost:8080');
 
 class Room extends React.Component {
   constructor(props) {
     super(props);
-    this.handleChatMessage = this.handleChatMessage.bind(this);
-    this.send = this.send.bind(this);
-    this.setState({
-      roomName: this.props.roomName
-        ? this.props.roomName
-        : history.location.pathname.replace('/', '')
-    });
+    this.state = {
+      callSign: this.props.callSign,
+      roomName: this.props.roomName,
+      messages: []
+    };
   }
-
-  state = {
-    callSign: this.props.callSign,
-    roomName: this.props.roomName,
-    message: '',
-    messages: []
-  };
 
   componentDidMount() {
     const roomName = this.props.roomName
@@ -31,6 +23,12 @@ class Room extends React.Component {
       : history.location.pathname.replace('/', '');
 
     const callSign = this.props.callSign ? this.props.callSign : this.createCallSign();
+
+    this.setState({
+      roomName: this.props.roomName
+        ? this.props.roomName
+        : history.location.pathname.replace('/', '')
+    });
 
     this.setState({ callSign: callSign, roomName: roomName }, () => {
       socket.emit(
@@ -70,22 +68,11 @@ class Room extends React.Component {
     }
   }
 
-  handleChatMessage(e) {
-    if (e.keyCode !== 13) {
-      this.setState({ message: e.target.value });
-    } else {
-      this.send();
-    }
-  }
-
-  send() {
+  sendMsg(callSign, message) {
     socket.emit('message', {
-      username: this.state.callSign,
-      text: this.state.message
+      username: callSign,
+      text: message
     });
-
-    document.getElementById('message').value = '';
-    this.setState({ message: '' });
   }
 
   render() {
@@ -99,33 +86,17 @@ class Room extends React.Component {
           </NavLink>
           Welcome to {this.state.roomName}
         </div>
-        <div className="msg-container">
-          <div className="messages">
-            {this.state.messages.map(function(item, index) {
-              return (
-                <div key={index}>
-                  <span>
-                    <b>{item.callSign}</b>: {item.message}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <div>
-            <input
-              id="message"
-              type="text"
-              onKeyUp={this.handleChatMessage}
-              placeholder="type here"
-            />
-            <button type="button" onClick={this.send}>
-              chat
-            </button>
-          </div>
-        </div>
+        <Meme />
+        <Chat
+          callSign={this.state.callSign}
+          messages={this.state.messages}
+          onSendMsg={this.sendMsg}
+        />
       </div>
     );
   }
+
+  componentWillUnmount() {}
 }
 
 export default Room;

@@ -2,13 +2,19 @@ var PORT = process.env.PORT || 8080;
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
+var fs = require('fs');
 var io = require('socket.io')(http);
 var moment = require('moment');
 var connectedUsers = {};
+var cursed = [];
 var rooms = [];
 
 app.use(express.static(__dirname + '/public'));
-
+fs.readdir('./src/games/meme/cursed', (err, files) => {
+  files.forEach(file => {
+    cursed.push(file);
+  });
+});
 io.on('connection', function(client) {
   client.on('subscribeToRooms', () => {
     setInterval(() => {
